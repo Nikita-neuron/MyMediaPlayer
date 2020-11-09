@@ -48,17 +48,10 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(MainActivity.this, PlaySong.class);
 
                 // записываем заголовок, артиста, путь песни
-//                intent.putExtra("songTitle", currSong.getTitle());
-//                intent.putExtra("songArtist", currSong.getArtist());
-//                intent.putExtra("songPath", currSong.getPath());
-//                intent.putExtra("songPosition", position);
                 Bundle args = new Bundle();
                 args.putParcelableArrayList("songList", songList);
                 intent.putExtras(args);
                 intent.putExtra("position", position);
-//                PlaySong play = new PlaySong();
-//                play.setArguments(args);
-//                intent.putExtra("songList", songList);
                 startActivity(intent);
             }
         });

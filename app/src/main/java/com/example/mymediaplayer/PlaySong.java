@@ -33,6 +33,7 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
     private Handler myHandler = new Handler();
     private int startTime = 0;
     private Runnable mRunnable;
+    private TextView timeText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,8 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
         // получаем позицию песни
         position = getIntent().getExtras().getInt("position");
 
+        timeText = findViewById(R.id.time);
+
         // запускаем песню
         initMusic(position);
         // добавляем слушателя для перемотки
@@ -66,10 +69,7 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
                 if(mHandler!=null){
                     mHandler.removeCallbacks(mRunnable);
                 }
-                if (position == 0){
-                    position = songList.size() - 1;
-                }
-                else if (position == songList.size() - 1) {
+                if (position == songList.size() - 1) {
                     position = 0;
                 }
                 else {
@@ -91,7 +91,13 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
             public void run() {
                 if(mPlayer!=null){
                     int mCurrentPosition = mPlayer.getCurrentPosition()/1000; // In milliseconds
+                    int maxPosition = mPlayer.getDuration()/1000;
                     seekBar.setProgress(mCurrentPosition);
+                    int minutesPos = mCurrentPosition / 60;
+                    int secondsPos = mCurrentPosition%60;
+                    int minutesMax = maxPosition / 60;
+                    int secondsMax = maxPosition%60;
+                    timeText.setText(minutesPos + ":" + (secondsPos < 10 ? "0" : "") + secondsPos + " / " + minutesMax + ":" + (secondsMax < 10 ? "0" : "") + secondsMax);
                 }
                 mHandler.postDelayed(mRunnable,1000);
             }
@@ -137,7 +143,7 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
 
         // устанавливаем артиста
         if (artist.equals("<unknown>")) {
-            artist = "";
+            artist = songTitle.split(" ")[0];
         }
         TextView artistTextView = (TextView)findViewById(R.id.songArtist);
         artistTextView.setText(artist);
@@ -162,6 +168,19 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
         startActivity(intent);
     }
 
+    public void onBack(View view) {
+        // если нажата стрелочка назад, то
+        // останавливаем песню и возвращаемся на главный экран
+        mPlayer.stop();
+        mPlayer.release();
+        mPlayer = null;
+        if(mHandler!=null){
+            mHandler.removeCallbacks(mRunnable);
+        }
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     public void rewindLeft(View view) {
         mPlayer.stop();
         mPlayer.release();
@@ -171,9 +190,6 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
         }
         if (position == 0){
             position = songList.size() - 1;
-        }
-        else if (position == songList.size() - 1) {
-            position = 0;
         }
         else {
             position -= 1;
@@ -204,10 +220,7 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
         if(mHandler!=null){
             mHandler.removeCallbacks(mRunnable);
         }
-        if (position == 0){
-            position = songList.size() - 1;
-        }
-        else if (position == songList.size() - 1) {
+        if (position == songList.size() - 1) {
             position = 0;
         }
         else {
