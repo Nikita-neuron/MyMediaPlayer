@@ -21,6 +21,7 @@ import java.util.ArrayList;
 
 public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarChangeListener{
 
+//    https://coderlessons.com/articles/mobilnaia-razrabotka-articles/fonovoe-audio-v-android-s-mediasessioncompat
     // создаём плеер
     MediaPlayer mPlayer;
     private ArrayList<Song> songList;
