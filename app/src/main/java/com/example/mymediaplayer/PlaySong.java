@@ -3,6 +3,7 @@ package com.example.mymediaplayer;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioManager;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarChangeListener{
@@ -54,8 +56,13 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
 
         timeText = findViewById(R.id.time);
 
+        path = songList.get(position).getPath();
+        Uri uri = Uri.fromFile(new File(path));
+        // создаём плеер
+        mPlayer = MediaPlayer.create(this, uri);
+
         // запускаем песню
-        initMusic(position);
+        runMusic(position);
         // добавляем слушателя для перемотки
         seekBar.setOnSeekBarChangeListener(this);
 
@@ -64,11 +71,6 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
             @Override
             public void onCompletion(MediaPlayer mp) {
                 mPlayer.stop();
-                mPlayer.release();
-                mPlayer = null;
-                if(mHandler!=null){
-                    mHandler.removeCallbacks(mRunnable);
-                }
                 if (position == songList.size() - 1) {
                     position = 0;
                 }
@@ -106,16 +108,24 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
     }
 
     public void initMusic(int position) {
+        path = songList.get(position).getPath();
+        Uri uri = Uri.fromFile(new File(path));
+        try {
+            mPlayer.reset();
+            mPlayer.setDataSource(this, uri);
+            mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+            mPlayer.prepare();
+            runMusic(position);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void runMusic(int position) {
         // получаем путь, заголовок, артиста
         path = songList.get(position).getPath();
         songTitle = songList.get(position).getTitle();
         artist = songList.get(position).getArtist();
-
-        // преобразуем путь в uri
-        Uri uri = Uri.fromFile(new File(path));
-
-        // открываем песню
-        mPlayer = MediaPlayer.create(this, uri);
 
         // если у песни есть картинка, то ставится она
         // в противном случае остаётся по умалчанию
@@ -182,12 +192,6 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
     }
 
     public void rewindLeft(View view) {
-        mPlayer.stop();
-        mPlayer.release();
-        mPlayer = null;
-        if(mHandler!=null){
-            mHandler.removeCallbacks(mRunnable);
-        }
         if (position == 0){
             position = songList.size() - 1;
         }
@@ -214,12 +218,6 @@ public class PlaySong  extends AppCompatActivity  implements SeekBar.OnSeekBarCh
     }
 
     public void rewindRight(View view) {
-        mPlayer.stop();
-        mPlayer.release();
-        mPlayer = null;
-        if(mHandler!=null){
-            mHandler.removeCallbacks(mRunnable);
-        }
         if (position == songList.size() - 1) {
             position = 0;
         }
